@@ -1,0 +1,77 @@
+---
+title: "US Storms and Trends"
+author: "Francisco Mimica Porras"
+date: "2/3/2021"
+output: html_document
+---
+
+# Synopsis
+
+
+Storms and other severe weather events can cause both public health and economic problems for communities and municipalities. This project involves exploring and analyzing the U.S. National Oceanic and Atmospheric Administration's (NOAA) storm database in order to identify the most important and major storms and weather events in the United States.
+
+# Setting the data
+
+```{r}
+setwd("C:/Users/Famil/OneDrive/COURSERA COURSES/Reproducible Research/Peer-graded Assignment Course Projects")
+library(data.table)
+library(ggplot2)
+
+```
+
+# Data Processing
+
+```{r}
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2", "stormdata.csv.bz2")
+stormdata <- read.csv(bzfile("stormdata.csv.bz2"))
+storm <- stormdata[c("EVTYPE", "FATALITIES", "INJURIES", "PROPDMG", "PROPDMGEXP", "CROPDMG", "CROPDMGEXP")]
+```
+# Results
+
+
+## Adding up injuries, fatalities, property damagea and crop damage according to event types
+
+```{r}
+aggregatedInjur <- aggregate(INJURIES~EVTYPE, storm, sum)
+aggregatedFatal <- aggregate(FATALITIES~EVTYPE, storm, sum)
+aggregatedPropDmg <- aggregate(PROPDMG~EVTYPE, storm, sum)
+aggregatedCropDmg <- aggregate(CROPDMG~EVTYPE, storm, sum)
+
+```
+
+## Sorting aggregated data sets
+
+```{r}
+sortedInjur <- aggregatedInjur[order(aggregatedInjur$INJURIES , aggregatedInjur$EVTYPE, decreasing = TRUE), ]
+sortedFatal <- aggregatedFatal[order(aggregatedFatal$FATALITIES , aggregatedFatal$EVTYPE, decreasing = TRUE), ]
+sortedPropDmg <- aggregatedPropDmg[order(aggregatedPropDmg$PROPDMG , aggregatedPropDmg$EVTYPE, decreasing = TRUE), ]
+sortedCropDmg <- aggregatedCropDmg[order(aggregatedCropDmg$CROPDMG , aggregatedCropDmg$EVTYPE, decreasing = TRUE), ]
+
+```
+
+## Grabbing most harmful events, i decided to just take the top 10
+
+```{r}
+
+mostHarmfulInjurEvents <- head(sortedInjur, n = 10)
+mostHarmfulFatalEvents <- head(sortedFatal, n = 10)
+mostHarmfulPropDmgEvents <- head(sortedPropDmg, n = 10)
+mostHarmfulCropDmgEvents <- head(sortedCropDmg, n = 10)
+
+```
+# Plots
+
+## Plotting injuries, fatalities, property damage and crop damage related events on a graph
+
+```{r}
+plot1 <- qplot(INJURIES, EVTYPE, data = mostHarmfulInjurEvents , xlab="Number of Injuries", ylab="Event Type")
+plot2 <- qplot(FATALITIES, EVTYPE, data = mostHarmfulFatalEvents , xlab="Number of Fatalities", ylab="Event Type")
+plot3 <- qplot(PROPDMG/1e3, EVTYPE, data = mostHarmfulPropDmgEvents, xlab="Property Damage(in 1000)", ylab="Event Type")
+plot4 <- qplot(CROPDMG/1e3, EVTYPE, data = mostHarmfulCropDmgEvents, xlab="crop Damage (in 1000)", ylab="Event Type")
+library(gridExtra)
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, nrow = 2)
+
+```
+# Conclusions
+
+## According with US Storm data, we can see that most injuries, fatalities and property damamge occur as a result of tornado however the hail has the most devasting economic effect in the US. 
